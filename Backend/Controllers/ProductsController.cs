@@ -15,20 +15,28 @@ public class ProductsController : ControllerBase
         _context = context;
     }
 
-    // GET: api/products
+    // GET: /api/products (Get all or filter by HasSizes)
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+    public async Task<ActionResult<IEnumerable<Product>>> GetProducts([FromQuery] bool? hasSizes)
     {
-        return await _context.Products
-            .Include(p => p.Variants) // ✅ Ensures size variants are loaded
-            .ToListAsync();
+        var query = _context.Products.Include(p => p.Variants).AsQueryable();
+
+        if (hasSizes != null)
+        {
+            query = query.Where(p => p.HasSizes == hasSizes);
+        }
+
+        return await query.ToListAsync();
     }
 
     // GET: api/products/5
     [HttpGet("{id}")]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await _context.Products
+            .Include(p => p.Variants)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
 
         if (product == null)
         {
@@ -40,7 +48,7 @@ public class ProductsController : ControllerBase
 
     //Post: api/products
     [HttpPost]
-    public async Task<ActionResult<Product>> CreateProduct(Product product)
+    public async Task<ActionResult<Product>> CreateProduct([FromBody] Product product)
     {
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
@@ -66,11 +74,11 @@ public class ProductsController : ControllerBase
 
     // PUT: api/products/{id}
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProduct(int id, Product updatedProduct)
+    public async Task<IActionResult> UpdateProduct(int id, [FromBody] Product updatedProduct)
     {
         var existingProduct = await _context.Products.FindAsync(id);
 
-        if (exitstingProduct == null)
+        if (existingProduct == null)
         {
             return NotFound();
         }
@@ -105,13 +113,14 @@ public class ProductsController : ControllerBase
         return NoContent();
     }
 
-    // Patch: /api/product/{id}/quantity
+    // PATCH: /api/products/{id}/quantity (Update only the quantity)
     [HttpPatch("{id}/quantity")]
-    public async Task<IActionResult> UpdateProductQuantity(int id, int quantity)
+    public async Task<IActionResult> UpdateProductQuantity(int id, [FromBody] int quantity)
     {
         var product = await _context.Products.FindAsync(id);
 
-        if (product == null){
+        if (product == null)
+        {
             return NotFound();
         }
 
@@ -120,6 +129,45 @@ public class ProductsController : ControllerBase
         return NoContent();
     }
 
+    // POST: /api/products/{id}/purchase (Reduce stock when a product is bought)
+    [HttpPost("{id}/purchase")]
+    public async Task<IActionResult> PurchaseProduct(int id, [FromBody] int requestedAmount)
+    {
+        var product = await _context.Products.FindAsync(id);
 
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        if (product.Quantity - requestedAmount < 0)
+        {
+            return BadRequest(new { error = "Not enough stock available" });
+        }
+
+        product.Quantity -= requestedAmount;
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    // GET: /api/products/search?query=...
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<Product>>> SearchProducts([FromQuery] string search)
+    {
+        if (string.IsNullOrEmpty(search))
+        {
+            return await _context.Products
+                .Include(p => p.Variants)
+                .ToListAsync();
+        }
+
+        string upperSearch = search.ToUpper(); // ✅ Convert once for performance
+
+        return await _context.Products
+            .Include(p => p.Variants)
+            .Where(p => p.Name.ToUpper().Contains(upperSearch) || 
+                        p.Description.ToUpper().Contains(upperSearch))
+            .ToListAsync();
+    }
 
 }
