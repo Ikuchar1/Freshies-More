@@ -1,0 +1,31 @@
+.home-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 2rem;
+
+  .product-category {
+    cursor: pointer;
+    text-align: center;
+    background: #f8f8f8;
+    padding: 1rem;
+    border-radius: 10px;
+    transition: transform 0.2s ease-in-out;
+    color: black;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    img {
+      width: 200px; // Adjust size
+      height: auto;
+      border-radius: 5px;
+    }
+
+    h2 {
+      margin-top: 0.5rem;
+      font-size: 1.5rem;
+    }
+  }
+}

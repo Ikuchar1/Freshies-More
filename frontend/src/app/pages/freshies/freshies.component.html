@@ -1,0 +1,11 @@
+<h1>Freshies</h1>
+
+<div class = "freshies-grid">
+  <div class="product-card" *ngFor="let product of freshies">
+    <img [src] = "product.imageUrl" alt = "{{ product.name }}">
+    <h2>{{ product.name }}</h2>
+    <p class = "price">${{ product.price }}</p>
+    <p class = "description">{{ product.description }}</p>
+  </div>
+</div>
+

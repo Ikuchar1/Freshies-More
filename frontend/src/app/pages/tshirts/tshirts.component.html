@@ -1,0 +1,9 @@
+<h1>T-Shirts</h1>
+
+<div class = "tshirts-grid">
+  <div class="product-card" *ngFor="let product of tshirts">
+    <img [src] = "product.imageUrl" alt = "{{ product.name }}">
+    <h2>{{ product.name }}</h2>
+    <p class = "price">${{ product.price }}</p>
+    <p class = "description">{{ product.description }}</p>
+  </div>
