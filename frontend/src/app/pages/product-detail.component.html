@@ -1,0 +1,38 @@
+<div *ngIf="product" class = "product-detail">
+  <div class = "product-image-container">
+    <img [src] = "product.imageUrl" alt = "{{ product.name }}" class = "product-image">
+  </div>
+
+  <div class = "product-info">
+    <h1>{{ product.name }}</h1>
+    <p class = "price">${{ product.price }}</p>
+    <p class = "description">{{ product.description }}</p>
+
+    <div *ngIf="product.hasSizes && product.variants?.length">
+      <h3>Select Size:</h3>
+
+      <div class="size-selector">
+        <label
+          *ngFor="let variant of product.variants"
+          class="size-option"
+          [class.disabled]="variant.quantity === 0"
+          [class.selected]="selectedSize === variant.size"
+        >
+          <input
+            type="radio"
+            name="size"
+            [value]="variant.size"
+            [(ngModel)]="selectedSize"
+            [disabled]="variant.quantity === 0"
+          />
+          {{ variant.size }}
+        </label>
+      </div>
+    </div>
+    <button class = "add-to-cart"
+      [disabled]="product.hasSizes && !selectedSize"
+    >
+      Add to Cart
+    </button>
+  </div>
+</div>
