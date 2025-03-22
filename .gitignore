@@ -1,4 +1,4 @@
-app.db
-bin/
-obj/
-.env
+Backend/app.db
+Backend/bin/
+Backend/obj/
+Backend/.env
